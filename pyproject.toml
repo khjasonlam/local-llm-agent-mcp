@@ -11,6 +11,7 @@ dependencies = [
 [tool.uv]
 package = false
 
-# エディタの型チェック（Pyright）を標準の厳しさにする
+# エディタの型チェック（Pyright）の設定
 [tool.pyright]
-typeCheckingMode = "standard"
+typeCheckingMode = "standard"   # 標準の厳しさにする
+extraPaths = ["session1"]       # session1 の中の _common を見つけられるようにする

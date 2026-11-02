@@ -29,6 +29,8 @@ def main():
         top_logprobs=TOP_N,       # 候補を上位 TOP_N 個まで
     )
 
+    if not res.logprobs:
+        sys.exit("確率が返ってきませんでした。Ollama を最新版に更新してください。")
     step = res.logprobs[0]
     print(f"モデル: {model}")
     print(f"入力　: {text}")

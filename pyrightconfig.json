@@ -1,4 +1,0 @@
-{
-  // エディタの型チェック（basedpyright / Pyright）を標準の厳しさにする
-  "typeCheckingMode": "standard"
-}
