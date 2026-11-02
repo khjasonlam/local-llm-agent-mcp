@@ -1,11 +1,11 @@
-"""04 小さいモデルと大きいモデルの「考え方」を比べる
+"""4.1 小さいモデルと大きいモデルの「考え方」を比べる
 
 同じ質問を2つのモデルに投げ、思考ログ（考えている途中の文章）と答えを並べる。
 
-実行:  uv run session1/04_compare.py            用意した質問の一覧を表示
-       uv run session1/04_compare.py 1          用意した質問の1番を投げる
-       uv run session1/04_compare.py "好きな質問"
-       uv run session1/04_compare.py 1 --no-think   思考なしで答えさせる（持ち帰り課題）
+実行:  uv run session1/4.1_compare.py            用意した質問の一覧を表示
+       uv run session1/4.1_compare.py 1          用意した質問の1番を投げる
+       uv run session1/4.1_compare.py "好きな質問"
+       uv run session1/4.1_compare.py 1 --no-think   思考なしで答えさせる（もっと試す）
 """
 import sys
 import time
@@ -31,7 +31,7 @@ def main():
         print("用意した質問:")
         for i, q in enumerate(QUESTIONS, start=1):
             print(f"  {i}. {q}")
-        print('\n使い方: uv run session1/04_compare.py 1　（または "好きな質問"）')
+        print('\n使い方: uv run session1/4.1_compare.py 1　（または "好きな質問"）')
         return
 
     question = QUESTIONS[int(args[0]) - 1] if args[0].isdigit() else args[0]

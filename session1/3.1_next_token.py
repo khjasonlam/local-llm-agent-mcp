@@ -1,10 +1,10 @@
-"""02 次に来るトークンの候補を見る
+"""3.1 次に来るトークンの候補を見る
 
 書きかけの文を渡し、LLM が「次に何を書くか」の候補と確率を表示する。
 LLM は、この候補の中から1つを選んで書き足すことを繰り返している。
 
-実行:  uv run session1/02_next_token.py
-       uv run session1/02_next_token.py "書きかけの文"
+実行:  uv run session1/3.1_next_token.py
+       uv run session1/3.1_next_token.py "書きかけの文"
 """
 import math
 import sys

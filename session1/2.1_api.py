@@ -1,10 +1,10 @@
-"""01 プログラムからLLMを呼ぶ
+"""2.1 プログラムからLLMを呼ぶ
 
 チャット画面の裏では、プログラムが「会話の履歴」を JSON で送り、
 返事を少しずつ受け取っているだけ。それをそのまま表示する。
 
-実行:  uv run session1/01_api.py
-       uv run session1/01_api.py "好きな質問"
+実行:  uv run session1/2.1_api.py
+       uv run session1/2.1_api.py "好きな質問"
 """
 import json
 import sys
@@ -24,7 +24,7 @@ def main():
             {"role": "user", "content": question},
         ],
         "stream": True,   # 返事を少しずつ受け取る
-        "think": False,   # 思考はオフ（思考は 04 で見る）
+        "think": False,   # 思考はオフ（思考は 4.1 で見る）
     }
 
     print("── 送ったデータ " + "─" * 40)

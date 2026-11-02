@@ -32,9 +32,12 @@ def show_token(token: str) -> str:
 
     日本語の1文字が2つのトークンに分かれると、Ollama は途中の部分を「�」で返す。
     それを「（文字の一部）」と表示する。
+    <|im_end|> のような特別なトークンは「ここで書き終える」という合図なので、「（書き終わり）」と表示する。
     """
     if "�" in token:
         return "（文字の一部）"
+    if token.startswith("<|") and token.endswith("|>"):
+        return "（書き終わり）"
     if token == "":
         return "（空）"
     return token.replace("\n", "[改行]").replace(" ", "[空白]")
@@ -65,7 +68,7 @@ def run(main) -> None:
     except ollama.ResponseError as e:
         sys.exit(f"Ollama からエラーが返りました：{e.error}")
     except Exception as e:
-        if type(e).__name__ == "APIConnectionError":  # openai ライブラリ（06）の接続エラー
+        if type(e).__name__ == "APIConnectionError":  # openai ライブラリ（2.2）の接続エラー
             sys.exit("Ollama に接続できません。Ollama のアプリが起動しているか確認してください。")
         raise
     except KeyboardInterrupt:

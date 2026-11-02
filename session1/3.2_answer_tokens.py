@@ -1,10 +1,10 @@
-"""03 答え全体を、1トークンずつ見る
+"""3.2 答え全体を、1トークンずつ見る
 
 短い答えを書かせ、書いたトークンごとに「選ばれたもの・その確率・ほかの候補」を並べる。
 迷わず書いた所と、迷った所がわかる。
 
-実行:  uv run session1/03_answer_tokens.py
-       uv run session1/03_answer_tokens.py "好きな質問"
+実行:  uv run session1/3.2_answer_tokens.py
+       uv run session1/3.2_answer_tokens.py "好きな質問"
 """
 import math
 import sys

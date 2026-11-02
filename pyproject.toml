@@ -5,7 +5,8 @@ description = "ローカルLLM・Agent・MCP 勉強会の教材"
 requires-python = ">=3.10"
 dependencies = [
     "ollama>=0.6.1",   # Ollama 公式の Python ライブラリ（0.6.1 以降で確率 logprobs が取れる）
-    "openai>=2",       # OpenAI 互換の書き方（06）で使う
+    "openai>=2",       # OpenAI 互換の書き方（2.2）で使う
+    "pypdf>=5",        # PDF から文字を取り出す（3.4）
 ]
 
 [tool.uv]

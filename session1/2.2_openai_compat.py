@@ -1,10 +1,10 @@
-"""06（持ち帰り）OpenAI 互換の書き方で、同じことをする
+"""2.2（もっと試す）OpenAI 互換の書き方で、同じことをする
 
 Ollama は、ChatGPT の API（OpenAI API）と同じ形でも呼べる。
 base_url を変えるだけで、同じコードのまま接続先を ChatGPT などに切り替えられる。
-01 と見比べて、送るデータと返ってくるデータの形の違いを確かめる。
+2.1 と見比べて、送るデータと返ってくるデータの形の違いを確かめる。
 
-実行:  uv run session1/06_openai_compat.py
+実行:  uv run session1/2.2_openai_compat.py
 """
 import json
 import sys
