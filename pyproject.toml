@@ -1,0 +1,16 @@
+[project]
+name = "local-llm-handson"
+version = "0.1.0"
+description = "ローカルLLM・Agent・MCP 勉強会の教材"
+requires-python = ">=3.10"
+dependencies = [
+    "ollama>=0.6.1",   # Ollama 公式の Python ライブラリ（0.6.1 以降で確率 logprobs が取れる）
+    "openai>=2",       # OpenAI 互換の書き方（06）で使う
+]
+
+[tool.uv]
+package = false
+
+# エディタの型チェック（Pyright）を標準の厳しさにする
+[tool.pyright]
+typeCheckingMode = "standard"

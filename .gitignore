@@ -1,0 +1,13 @@
+# 運営用（公開しない）
+internal/
+
+# 配布用 zip の出力先
+dist/
+
+# Python / uv
+.venv/
+__pycache__/
+*.pyc
+
+# エディタ・OS
+.DS_Store
