@@ -13,6 +13,7 @@
 | `internal/tools/make_zip.py` | 配布 zip を作る（標準ライブラリのみ） | 入らない |
 | `internal/tools/verify.py` | 運営用。教材を実機でまとめて実行し、結果を `internal/verify_results/<日時>/` に保存 | 入らない |
 | `internal/check_guide.md` | 運営メンバー向けの動作確認手順（verify.py の使い方） | 入らない |
+| `internal/tools/make_backup_pdf.py` | ページの HTML から PDF 控えを作る（`uv run --with playwright` で実行）。ページを直したら控えも作り直す | 入らない |
 | `internal/backup/` | 当日資料・事前準備ページの PDF 控え（Artifact が開けないとき用） | 入らない |
 | `internal/archive/` | 過去の下書き（Agent・MCP の図書貸出ワークブック等）。gitignore 済み。第2回・第3回の素材 | 入らない |
 
@@ -64,6 +65,7 @@ uv run internal/tools/make_zip.py         # dist/llm-agent-mcp-handson.zip を�
 - 教材に入れる入力・サンプルはダミーだけ（業務データ・実在の人物の情報は入れない）。`assets/sample.pdf` も架空の社内図書館の案内。
 - モデル名は `_common.py`、`verify.py`、`README.md`、`check_guide.md` に重複して書かれている。変えるときは全部そろえる。
 - 公開リポジトリなので、社名・社内システム名・個人情報を書かない。
+- 受講者にリポジトリ（GitHub のページ）は見せない。当日資料・事前準備ページからリポジトリへのリンクを張らず、受講者に必要な説明はページ自体か配布 zip の README に書く（zip のダウンロードリンクだけは例外）。
 
 ## コミット
 
