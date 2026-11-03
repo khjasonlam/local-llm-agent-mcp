@@ -62,7 +62,7 @@ def main():
         ("2.1_api", ["2.1_api.py"]),
         ("3.1_next_token", ["3.1_next_token.py"]),
         ("3.2_answer_tokens", ["3.2_answer_tokens.py"]),
-        ("3.2_answer_tokens_rare", ["3.2_answer_tokens.py", "「バラ」を漢字で書いて。漢字だけ答えて"]),
+        ("3.2_answer_tokens_rare", ["3.2_answer_tokens.py", "「えんすい」を漢字で書いて。漢字だけ答えて"]),
         ("3.2_answer_tokens_temp0_a", ["3.2_answer_tokens.py", "--temperature", "0"]),
         ("3.2_answer_tokens_temp0_b", ["3.2_answer_tokens.py", "--temperature", "0"]),
         ("4.1_compare_list", ["4.1_compare.py"]),

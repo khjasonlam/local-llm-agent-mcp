@@ -5,7 +5,7 @@
 
 実行:  uv run session1/3.2_answer_tokens.py
        uv run session1/3.2_answer_tokens.py "好きな質問"
-       uv run session1/3.2_answer_tokens.py --temperature 0   くじ引きをせず、毎回いちばん確率の高い候補を選ぶ（もっと試す）
+       uv run session1/3.2_answer_tokens.py --temperature 0   くじ引きをしない。何度実行しても同じ答えになる（もっと試す）
 """
 import math
 import sys
