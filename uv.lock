@@ -305,7 +305,7 @@ wheels = [
 ]
 
 [[package]]
-name = "local-llm-handson"
+name = "llm-agent-mcp-handson"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

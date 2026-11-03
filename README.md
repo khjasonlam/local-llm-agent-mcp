@@ -12,7 +12,7 @@
 
 ## 教材の取り方
 
-[local-llm-handson.zip](https://github.com/khjasonlam/local-llm-agent-mcp/releases/latest/download/local-llm-handson.zip) をダウンロードして展開し、展開したフォルダで次を実行します。
+[llm-agent-mcp-handson.zip](https://github.com/khjasonlam/local-llm-agent-mcp/releases/latest/download/llm-agent-mcp-handson.zip) をダウンロードして展開し、展開したフォルダで次を実行します。
 
 ```bash
 uv sync

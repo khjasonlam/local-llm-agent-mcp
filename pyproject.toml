@@ -1,5 +1,5 @@
 [project]
-name = "local-llm-handson"
+name = "llm-agent-mcp-handson"
 version = "0.1.0"
 description = "ローカルLLM・Agent・MCP 勉強会の教材"
 requires-python = ">=3.10"

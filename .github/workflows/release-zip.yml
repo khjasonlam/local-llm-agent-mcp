@@ -1,5 +1,5 @@
 # 参加者に配る zip を作り、リリース「handson」に添付し直す。
-# 配布リンク（releases/latest/download/local-llm-handson.zip）は、いつもこの最新の zip を指す。
+# 配布リンク（releases/latest/download/llm-agent-mcp-handson.zip）は、いつもこの最新の zip を指す。
 name: 配布用 zip を更新
 
 on:
@@ -37,7 +37,7 @@ jobs:
         run: |
           gh release view "$TAG" >/dev/null 2>&1 || \
             gh release create "$TAG" --title "勉強会の教材" --latest \
-              --notes "勉強会で使う教材です。local-llm-handson.zip をダウンロードしてください。"
+              --notes "勉強会で使う教材です。llm-agent-mcp-handson.zip をダウンロードしてください。"
 
       - name: zip を差し替える
-        run: gh release upload "$TAG" dist/local-llm-handson.zip --clobber
+        run: gh release upload "$TAG" dist/llm-agent-mcp-handson.zip --clobber

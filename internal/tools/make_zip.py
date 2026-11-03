@@ -3,7 +3,7 @@
 教材フォルダ（pyproject.toml がある場所）で実行する:
     uv run internal/tools/make_zip.py
 
-dist/local-llm-handson.zip ができる（参加者に配るもの）。
+dist/llm-agent-mcp-handson.zip ができる（参加者に配るもの）。
 main に push すると GitHub Actions がこのスクリプトで zip を作り、リリースに添付し直すので、
 手元で実行するのは中身を確かめたいときだけでよい。
 運営の動作確認は、リポジトリを git clone して internal/tools/verify.py を実行する（internal/windows_check.md）。
@@ -12,7 +12,7 @@ import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-TOP = "local-llm-handson"  # 展開したときのフォルダ名
+TOP = "llm-agent-mcp-handson"  # 展開したときのフォルダ名
 PUBLIC = ["README.md", "pyproject.toml", "uv.lock", "session1"]
 SKIP = {"__pycache__", ".DS_Store"}
 
@@ -38,4 +38,4 @@ def build(path: Path, names: list[str]) -> None:
 if __name__ == "__main__":
     dist = ROOT / "dist"
     dist.mkdir(exist_ok=True)
-    build(dist / "local-llm-handson.zip", PUBLIC)
+    build(dist / "llm-agent-mcp-handson.zip", PUBLIC)
