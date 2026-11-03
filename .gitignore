@@ -1,4 +1,4 @@
-# 運営用のうち、公開しないもの（tools と windows_check.md はコミットする）
+# 運営用のうち、公開しないもの（tools と check_guide.md はコミットする）
 internal/verify_results/
 
 # 配布用 zip の出力先
