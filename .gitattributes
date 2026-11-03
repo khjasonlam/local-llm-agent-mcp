@@ -1,0 +1,3 @@
+# GitHub が自動で作る「Source code (zip)」から運営用フォルダを外す
+# （参加者に配る zip は internal/tools/make_zip.py で作るので、こちらには元から入らない）
+internal/ export-ignore

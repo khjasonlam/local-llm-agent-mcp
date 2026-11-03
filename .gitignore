@@ -1,5 +1,6 @@
-# 運営用（公開しない）
-internal/
+# 運営用のうち、公開しないもの（tools と windows_check.md はコミットする）
+internal/2610_draft/
+internal/verify_results/
 
 # 配布用 zip の出力先
 dist/
