@@ -6,7 +6,7 @@
 dist/llm-agent-mcp-handson.zip ができる（参加者に配るもの）。
 main に push すると GitHub Actions がこのスクリプトで zip を作り、リリースに添付し直すので、
 手元で実行するのは中身を確かめたいときだけでよい。
-運営の動作確認は、リポジトリを git clone して internal/tools/verify.py を実行する（internal/check_guide.md）。
+運営の動作確認は、リポジトリを git clone して internal/tools/verify_session<回>.py を実行する（internal/check_guide.md）。
 """
 import zipfile
 from pathlib import Path

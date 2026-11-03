@@ -11,8 +11,9 @@
 | `session1/` | 第1回「ローカルLLMの中をのぞく」のスクリプト。`_common.py` は共通処理、`assets/` はサンプル画像・PDF | 入る |
 | `README.md` / `pyproject.toml` / `uv.lock` | 参加者向けの入口と依存関係 | 入る |
 | `internal/tools/make_zip.py` | 配布 zip を作る（標準ライブラリのみ） | 入らない |
-| `internal/tools/verify.py` | 運営用。教材を実機でまとめて実行し、結果を `internal/verify_results/<日時>/` に保存 | 入らない |
-| `internal/check_guide.md` | 運営メンバー向けの動作確認手順（verify.py の使い方） | 入らない |
+| `internal/tools/verify_session1.py` | 運営用。第1回の教材を実機でまとめて実行し、結果を `internal/verify_results/session1/<日時>/` に保存。回ごとに `verify_session<回>.py` を作る | 入らない |
+| `internal/tools/verify_common.py` | 各回の verify で共通の処理（環境の記録・スクリプトの実行・保存） | 入らない |
+| `internal/check_guide.md` | 運営メンバー向けの動作確認手順（verify_session<回>.py の使い方） | 入らない |
 | `internal/tools/make_backup_pdf.py` | ページの HTML から PDF 控えを作る（`uv run` で実行。playwright は PEP 723 の欄で指定し、プロジェクトの依存関係には入れない）。ページを直したら控えも作り直す | 入らない |
 | `internal/backup/` | 当日資料・事前準備ページの PDF 控え（Artifact が開けないとき用） | 入らない |
 | `internal/archive/` | 過去の下書き（Agent・MCP の図書貸出ワークブック等）。gitignore 済み。第2回・第3回の素材 | 入らない |
@@ -25,11 +26,11 @@
 ```bash
 uv sync                                   # 依存関係を入れる
 uv run session1/2.1_api.py                # スクリプトの実行（参加者と同じ形。リポジトリのルートから）
-uv run internal/tools/verify.py --quick   # 実機での一括確認（約10分。--quick なしで約20分）
+uv run internal/tools/verify_session1.py --quick   # 第1回の実機での一括確認（約10分。--quick なしで約20分）
 uv run internal/tools/make_zip.py         # dist/llm-agent-mcp-handson.zip を手元で作る（確認用）
 ```
 
-- 実行には Ollama の起動と、モデル `qwen3.5:0.8b` ＋ `qwen3.5:4b` か `qwen3.5:2b` が必要。自動テストや CI での実行は無く、確認は verify.py を実機で回す。
+- 実行には Ollama の起動と、モデル `qwen3.5:0.8b` ＋ `qwen3.5:4b` か `qwen3.5:2b` が必要。自動テストや CI での実行は無く、確認は回ごとの verify_session<回>.py を実機で回す。
 - `pyproject.toml` の依存を変えたら `uv lock` で `uv.lock` も更新してコミットする。
 
 ## 配布の仕組み
@@ -44,11 +45,11 @@ uv run internal/tools/make_zip.py         # dist/llm-agent-mcp-handson.zip を�
 2. `.github/workflows/release-zip.yml` の `paths`
 3. `pyproject.toml` の `[tool.pyright] extraPaths`（`_common` を見つけるため）と、必要なら依存
 4. `README.md` の「中身」表と「資料」表
-5. `internal/tools/verify.py`（今は第1回だけを確認している）と `internal/check_guide.md`
+5. `internal/tools/verify_session<回>.py` を新しく作る（共通の処理は `verify_common.py`）。`internal/check_guide.md` も更新する
 
 ## スクリプトの書き方（session1 の慣習）
 
-- ファイル名は当日資料の節番号に合わせる（`2.1_api.py`、`4.1_compare.py`）。番号を変えるときは、docstring 内の相互参照（「4.1 で見る」など）、verify.py のスクリプト一覧、当日資料の Artifact もそろえる。
+- ファイル名は当日資料の節番号に合わせる（`2.1_api.py`、`4.1_compare.py`）。番号を変えるときは、docstring 内の相互参照（「4.1 で見る」など）、verify_session1.py のスクリプト一覧、当日資料の Artifact もそろえる。
 - 先頭の docstring は「節番号＋タイトル → 何を見るスクリプトかの説明 → `実行:` の例」の形。任意の節はタイトルに「（もっと試す）」を付ける。
 - 既定の入力を持ち、`sys.argv[1]` で好きな質問に差し替えられるようにする。
 - モデル名は直書きせず `_common.big_model()` / `small_model()` を使う（未導入なら事前準備の手順を案内して終了する）。
@@ -63,7 +64,7 @@ uv run internal/tools/make_zip.py         # dist/llm-agent-mcp-handson.zip を�
 
 - 使うモデルは PC の中だけで動くもの（`qwen3.5:0.8b`、`qwen3.5:4b`、`qwen3.5:2b`）。名前に `cloud` が付くモデルは使わない・勧めない。
 - 教材に入れる入力・サンプルはダミーだけ（業務データ・実在の人物の情報は入れない）。`assets/sample.pdf` も架空の社内図書館の案内。
-- モデル名は `_common.py`、`verify.py`、`README.md`、`check_guide.md` に重複して書かれている。変えるときは全部そろえる。
+- モデル名は `_common.py`、`verify_session1.py`、`README.md`、`check_guide.md` に重複して書かれている。変えるときは全部そろえる。
 - 公開リポジトリなので、社名・社内システム名・個人情報を書かない。
 - 受講者にリポジトリ（GitHub のページ）は見せない。当日資料・事前準備ページからリポジトリへのリンクを張らず、受講者に必要な説明はページ自体か配布 zip の README に書く（zip のダウンロードリンクだけは例外）。
 

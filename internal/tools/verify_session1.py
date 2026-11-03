@@ -1,26 +1,20 @@
-"""運営用：第1回の教材を実機でまとめて検証する。
+"""運営用：第1回の教材を実機でまとめて検証する（回ごとに verify_session<回>.py を作る）。
 
 教材フォルダ（pyproject.toml がある場所）で実行する:
-    uv run internal/tools/verify.py            # 全部（20分前後）
-    uv run internal/tools/verify.py --quick    # 比較の質問を1回ずつにして短く（10分前後）
+    uv run internal/tools/verify_session1.py            # 全部（20分前後）
+    uv run internal/tools/verify_session1.py --quick    # 比較の質問を1回ずつにして短く（10分前後）
 
-結果は internal/verify_results/<日時>/ に保存される。途中で止めても、そこまでの結果は残る。
+結果は internal/verify_results/session1/<日時>/ に保存される。途中で止めても、そこまでの結果は残る。
 """
-import json
 import math
-import os
-import platform
-import subprocess
 import sys
 import time
-from datetime import datetime
 from pathlib import Path
 
-import httpx
 import ollama
 
-ROOT = Path(__file__).resolve().parents[2]
-S1 = ROOT / "session1"
+from verify_common import environment, log, results_dir, run_script, save
+
 SMALL = "qwen3.5:0.8b"
 BIG_CANDIDATES = ["qwen3.5:4b", "qwen3.5:2b"]
 
@@ -46,9 +40,7 @@ NEXT_TOKEN_CANDIDATES = ["日本の首都は", "むかしむかし、あると�
 def main():
     quick = "--quick" in sys.argv
     trials = 1 if quick else 3
-    out = ROOT / "internal" / "verify_results" / datetime.now().strftime("%Y%m%d-%H%M%S")
-    out.mkdir(parents=True, exist_ok=True)
-    log(f"結果の保存先: {out}")
+    out = results_dir(1)
 
     env = environment()
     save(out / "00_environment.json", env)
@@ -76,7 +68,7 @@ def main():
         ("3.4_pdf", ["3.4_pdf.py"]),
     ]
     for name, args in scripts:
-        run_script(out, name, args)
+        run_script(out, "session1", name, args)
 
     # 2) 3.1 の書きかけの文の候補
     rows = []
@@ -122,34 +114,6 @@ def main():
     log(f"完了しました。結果: {out}")
 
 
-def environment() -> dict:
-    try:
-        server = httpx.get("http://localhost:11434/api/version", timeout=5).json().get("version")
-    except Exception as e:  # noqa: BLE001
-        log(f"Ollama に接続できません: {e}")
-        sys.exit(1)
-    models = sorted(m.model for m in ollama.list().models if m.model)
-    lib = subprocess.run([sys.executable, "-c", "import importlib.metadata as m; print(m.version('ollama'))"],
-                         capture_output=True, text=True).stdout.strip()
-    env = {"ollama_server": server, "ollama_python": lib, "python": sys.version.split()[0],
-           "os": f"{platform.system()} {platform.release()} {platform.machine()}", "models": models}
-    log(json.dumps(env, ensure_ascii=False))
-    return env
-
-
-def run_script(out: Path, name: str, args: list[str]) -> None:
-    log(f"実行: session1/{' '.join(args)}")
-    start = time.perf_counter()
-    env = {**os.environ, "PYTHONIOENCODING": "utf-8"}
-    p = subprocess.run([sys.executable, str(S1 / args[0]), *args[1:]], cwd=ROOT, env=env,
-                       capture_output=True, text=True, encoding="utf-8", errors="replace")
-    secs = time.perf_counter() - start
-    (out / f"1x_{name}.txt").write_text(
-        f"$ uv run session1/{' '.join(args)}\n# 終了コード {p.returncode} / {secs:.1f}秒\n\n"
-        f"{p.stdout}\n--- stderr ---\n{p.stderr}", encoding="utf-8")
-    log(f"  → 終了コード {p.returncode}（{secs:.1f}秒）")
-
-
 def ask(model: str, question: str, limit: int) -> dict:
     start = time.perf_counter()
     res = ollama.chat(model=model, messages=[{"role": "user", "content": question}], think=True,
@@ -170,14 +134,6 @@ def summary(out: Path, rows: list[dict], trials: int) -> None:
                 lines.append(f"| {r['model']} | {r['trial']} | {r['thinking_chars']} | {r['seconds']} | {ans} |")
         lines.append("")
     (out / "41_compare_summary.md").write_text("\n".join(lines), encoding="utf-8")
-
-
-def save(path: Path, data) -> None:
-    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
-
-
-def log(msg: str) -> None:
-    print(f"[{datetime.now():%H:%M:%S}] {msg}", flush=True)
 
 
 if __name__ == "__main__":

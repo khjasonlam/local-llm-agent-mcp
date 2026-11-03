@@ -23,7 +23,7 @@ Ollama・モデル2つ（`qwen3.5:0.8b` と、メモリに合わせて `qwen3.5:
 
 ## 3. リポジトリを取ってくる
 
-教材を置きたい場所（例: ドキュメント）で、次を実行します。参加者に配る教材に、確認用のスクリプト（`internal/tools/verify.py`）が入った状態で取ってこられます。
+教材を置きたい場所（例: ドキュメント）で、次を実行します。参加者に配る教材に、確認用のスクリプト（`internal/tools/verify_session1.py` など、回ごとに1つ）が入った状態で取ってこられます。
 
 ```
 git clone https://github.com/khjasonlam/local-llm-agent-mcp.git
@@ -38,7 +38,7 @@ cd local-llm-agent-mcp
 
 ```
 uv sync
-uv run internal/tools/verify.py --quick
+uv run internal/tools/verify_session1.py --quick
 ```
 
 | 実行のしかた | かかる時間の目安 | 使いどころ |
@@ -50,7 +50,7 @@ uv run internal/tools/verify.py --quick
 
 ## 5. 結果を送る
 
-`local-llm-agent-mcp` フォルダの中の `internal/verify_results/` に、日時の名前のフォルダができています。そのフォルダを zip にして、Jason に送ってください。
+`local-llm-agent-mcp` フォルダの中の `internal/verify_results/session1/` に、日時の名前のフォルダができています（第2回なら `session2/`）。そのフォルダを zip にして、Jason に送ってください。
 
 | | zip にする方法 |
 | --- | --- |
@@ -71,4 +71,4 @@ uv run internal/tools/verify.py --quick
 - 3.2 の `--temperature 0` を2回実行した結果（`1x_3.2_answer_tokens_temp0_a.txt` と `_b.txt`）が同じ答えになるか
 - 2.3 で、履歴ありの2回目は「ほうじ茶」と答え、履歴なしの2回目は答えられないか
 - 日本語・罫線・棒グラフ（█）が崩れずに表示されるか。特に Windows の PowerShell（結果ファイルとは別に、画面の見え方も聞く）
-- 今の `verify.py` が確かめるのは第1回の教材だけ。第2回・第3回の教材ができたら、`verify.py` に追加する
+- 確認用のスクリプトは回ごとに分けている。第2回・第3回の教材ができたら、`verify_session2.py` のように新しく作り、共通の処理は `verify_common.py` を使う
