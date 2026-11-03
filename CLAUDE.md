@@ -13,7 +13,7 @@
 | `internal/tools/make_zip.py` | 配布 zip を作る（標準ライブラリのみ） | 入らない |
 | `internal/tools/verify.py` | 運営用。教材を実機でまとめて実行し、結果を `internal/verify_results/<日時>/` に保存 | 入らない |
 | `internal/check_guide.md` | 運営メンバー向けの動作確認手順（verify.py の使い方） | 入らない |
-| `internal/tools/make_backup_pdf.py` | ページの HTML から PDF 控えを作る（`uv run --with playwright` で実行）。ページを直したら控えも作り直す | 入らない |
+| `internal/tools/make_backup_pdf.py` | ページの HTML から PDF 控えを作る（`uv run` で実行。playwright は PEP 723 の欄で指定し、プロジェクトの依存関係には入れない）。ページを直したら控えも作り直す | 入らない |
 | `internal/backup/` | 当日資料・事前準備ページの PDF 控え（Artifact が開けないとき用） | 入らない |
 | `internal/archive/` | 過去の下書き（Agent・MCP の図書貸出ワークブック等）。gitignore 済み。第2回・第3回の素材 | 入らない |
 

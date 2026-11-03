@@ -1,17 +1,27 @@
+# /// script
+# requires-python = ">=3.10"
+# dependencies = ["playwright"]
+# ///
 """運営用：当日資料・事前準備ページ（Artifact）の HTML から、PDF の控えを作る。
 
 Artifact が開けないときのための控え（internal/backup/）。折りたたみはすべて開き、
 事前準備ページは Windows / Mac、メモリ 16GB / 8GB の両方を並べて載せる。
 
+playwright は受講者に入れたくないので、プロジェクトの依存関係には入れていない。
+先頭の「script」の欄に書いてあるので、uv run で実行すると uv が自動で用意する。
+
 使い方（ページの HTML を保存してから）:
-    uv run --with playwright internal/tools/make_backup_pdf.py s1.html internal/backup/第1回_当日資料.pdf s1
-    uv run --with playwright internal/tools/make_backup_pdf.py prep.html internal/backup/事前準備.pdf prep
+    uv run internal/tools/make_backup_pdf.py s1.html internal/backup/第1回_当日資料.pdf s1
+    uv run internal/tools/make_backup_pdf.py prep.html internal/backup/事前準備.pdf prep
+初めて使うときは、先に Chromium を入れる:
+    uv run --with playwright playwright install chromium
 日付（DATE）はバックアップの時点に合わせて書き換える。
 """
 import sys
 from pathlib import Path
 
-from playwright.sync_api import sync_playwright
+# playwright はプロジェクトの .venv に入れていないので、エディタの「見つからない」警告だけ止める
+from playwright.sync_api import sync_playwright  # pyright: ignore[reportMissingImports]
 
 DATE = "2026-11-03"
 
