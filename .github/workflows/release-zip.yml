@@ -1,0 +1,43 @@
+# 参加者に配る zip を作り、リリース「handson」に添付し直す。
+# 配布リンク（releases/latest/download/local-llm-handson.zip）は、いつもこの最新の zip を指す。
+name: 配布用 zip を更新
+
+on:
+  push:
+    branches: [main]
+    paths:                       # 配る中身が変わったときだけ動かす
+      - "session1/**"
+      - "README.md"
+      - "pyproject.toml"
+      - "uv.lock"
+      - "internal/tools/make_zip.py"
+      - ".github/workflows/release-zip.yml"
+  workflow_dispatch:             # Actions の画面から手動でも動かせる
+
+permissions:
+  contents: write                # リリースの作成・ファイルの差し替えに必要
+
+concurrency:                     # 続けて push したときは、最後の1回だけ反映する
+  group: release-zip
+  cancel-in-progress: true
+
+jobs:
+  zip:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: handson
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: zip を作る
+        run: python3 internal/tools/make_zip.py   # 標準ライブラリだけで動く
+
+      - name: リリースがなければ作る
+        run: |
+          gh release view "$TAG" >/dev/null 2>&1 || \
+            gh release create "$TAG" --title "勉強会の教材" --latest \
+              --notes "勉強会で使う教材です。local-llm-handson.zip をダウンロードしてください。"
+
+      - name: zip を差し替える
+        run: gh release upload "$TAG" dist/local-llm-handson.zip --clobber
