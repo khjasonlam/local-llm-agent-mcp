@@ -1,4 +1,6 @@
 # 運営用のうち、公開しないもの（tools と check_guide.md はコミットする）
+# （archive は過去の下書き、verify_results は verify.py の結果）
+internal/archive/
 internal/verify_results/
 
 # 配布用 zip の出力先
