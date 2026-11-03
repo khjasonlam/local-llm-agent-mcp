@@ -5,6 +5,7 @@
 
 実行:  uv run session1/3.2_answer_tokens.py
        uv run session1/3.2_answer_tokens.py "好きな質問"
+       uv run session1/3.2_answer_tokens.py --temperature 0   くじ引きをせず、毎回いちばん確率の高い候補を選ぶ（もっと試す）
 """
 import math
 import sys
@@ -18,7 +19,17 @@ HESITATED = 0.5   # 確率がこれより低いトークンを「迷った」と
 
 
 def main():
-    question = sys.argv[1] if len(sys.argv) > 1 else "新しいカフェの名前を1つ考えて。名前だけ答えて"
+    args = sys.argv[1:]
+    # --temperature 数字 で、くじ引きの度合いを変えられる（0 にすると、くじ引きをしない）
+    temperature = None
+    if "--temperature" in args:
+        i = args.index("--temperature")
+        try:
+            temperature = float(args[i + 1])
+        except (IndexError, ValueError):
+            sys.exit("--temperature のあとに数字を付けてください（例: --temperature 0）")
+        del args[i:i + 2]
+    question = args[0] if args else "新しいカフェの名前を1つ考えて。名前だけ答えて"
     model = big_model()
 
     res = ollama.chat(
@@ -27,10 +38,13 @@ def main():
         think=False,
         logprobs=True,
         top_logprobs=OTHERS + 1,
+        options={} if temperature is None else {"temperature": temperature},
     )
 
     print(f"モデル: {model}")
     print(f"質問　: {question}")
+    if temperature is not None:
+        print(f"温度　: {temperature:g}（くじ引きの度合い。0 はくじ引きなし）")
     print(f"答え　: {res.message.content}\n")
     print(f"  {'#':>3}  {pad('選ばれた', 16)} {'確率':>6}   ほかの候補")
     hesitated = 0
