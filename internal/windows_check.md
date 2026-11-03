@@ -9,13 +9,20 @@
 
 Ollama・モデル2つ（`qwen3.5:0.8b` と、メモリに合わせて `qwen3.5:4b` か `qwen3.5:2b`）・uv が入っていれば大丈夫です。
 
-## 2. 確認用の zip を展開する
+## 2. リポジトリを取ってくる
 
-一緒に送った `local-llm-handson-check.zip` を展開します（参加者に配るものに、確認用のスクリプトを1本足したものです）。
+PowerShell を開き、教材を置きたい場所（例: ドキュメント）で次を実行します。参加者に配る教材に、確認用のスクリプト（`internal/tools/verify.py`）が入った状態で取ってこられます。
 
-## 3. PowerShell で実行する
+```powershell
+git clone https://github.com/khjasonlam/local-llm-agent-mcp.git
+cd local-llm-agent-mcp
+```
 
-展開した `local-llm-handson` フォルダを右クリック →「ターミナルで開く」（Windows 10 は Shift＋右クリック →「PowerShell ウィンドウをここで開く」）で開き、次を実行します。
+2回目以降は、`local-llm-agent-mcp` フォルダで `git pull` を実行すれば最新になります。
+
+## 3. 確認用のスクリプトを実行する
+
+続けて、同じ PowerShell で次を実行します。
 
 ```powershell
 uv sync
@@ -26,7 +33,7 @@ uv run internal/tools/verify.py --quick
 
 ## 4. 結果を送る
 
-`internal\verify_results\` の中にできたフォルダ（日時の名前）を zip にして、Jason に送ってください。
+`local-llm-agent-mcp\internal\verify_results\` の中にできたフォルダ（日時の名前）を zip にして、Jason に送ってください。
 あわせて、次の3つを教えてください。
 
 - PCの機種、メモリ、GPUの有無（わかる範囲で）
