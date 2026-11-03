@@ -27,6 +27,17 @@ def small_model() -> str:
     return SMALL_MODEL
 
 
+def free_memory(keep: str) -> None:
+    """keep 以外の、メモリに読み込まれているモデルを外す。
+
+    Ollama は使ったモデルをしばらくメモリに残すので、2つのモデルを続けて使うと両方が載ったままになる。
+    メモリ8GBのPCや、Google Meet などを開いたままのPCで重くならないように、使う前に外しておく。
+    """
+    for m in ollama.ps().models:
+        if m.model and m.model != keep:
+            ollama.generate(model=m.model, keep_alive=0)  # keep_alive=0 で「すぐ外す」
+
+
 def show_token(token: str) -> str:
     """トークンを画面で見やすい形にする。
 

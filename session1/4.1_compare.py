@@ -12,7 +12,7 @@ import time
 
 import ollama
 
-from _common import big_model, run, small_model, text_width
+from _common import big_model, free_memory, run, small_model, text_width
 
 QUESTIONS = [
     "英単語 strawberry の中に、r は何個ありますか？",
@@ -34,7 +34,13 @@ def main():
         print('\n使い方: uv run session1/4.1_compare.py 1　（または "好きな質問"）')
         return
 
-    question = QUESTIONS[int(args[0]) - 1] if args[0].isdigit() else args[0]
+    if args[0].isdigit():
+        number = int(args[0])
+        if not 1 <= number <= len(QUESTIONS):
+            sys.exit(f"番号は 1〜{len(QUESTIONS)} で指定してください。")
+        question = QUESTIONS[number - 1]
+    else:
+        question = args[0]
     models = [(small_model(), MAX_TOKENS["small"]), (big_model(), MAX_TOKENS["big"])]
     print(f"質問: {question}")
     print(f"思考: {'あり' if think else 'なし'}\n")
@@ -64,6 +70,7 @@ def main():
 def ask(model: str, question: str, think: bool, limit: int) -> dict:
     """1つのモデルに質問し、思考と答えを集める。待っている間は進み具合を表示する。"""
     thinking, answer, tokens, cut = "", "", 0, False
+    free_memory(keep=model)  # もう1つのモデルをメモリから外してから始める
     start = time.perf_counter()
     stream = ollama.chat(
         model=model,
