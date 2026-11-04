@@ -44,10 +44,9 @@ uv run internal/tools/check_zip.py        # 配布 zip を展開して起動ま�
 ## 新しい回（session2/ など）を足すときに更新する場所
 
 1. `internal/tools/make_zip.py` の `PUBLIC`
-2. `.github/workflows/release-zip.yml` の `paths`
-3. `pyproject.toml` の `[tool.pyright] extraPaths`（`_common` を見つけるため）と、必要なら依存
-4. `README.md` の「中身」表と「資料」表
-5. `internal/tools/verify_session<回>.py` を新しく作る（共通の処理は `verify_common.py`）。`internal/check_guide.md` も更新する
+2. `pyproject.toml` の `[tool.pyright] extraPaths`（`_common` を見つけるため）と、必要なら依存
+3. `README.md` の「中身」表と「資料」表
+4. `internal/tools/verify_session<回>.py` を新しく作る（共通の処理は `verify_common.py`）。`internal/check_guide.md` も更新する
 
 ## スクリプトの書き方（session1 の慣習）
 

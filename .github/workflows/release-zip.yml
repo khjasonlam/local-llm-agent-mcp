@@ -6,7 +6,7 @@ on:
   push:
     branches: [main]
     paths:                       # 配る中身が変わったときだけ動かす
-      - "session1/**"
+      - "session*/**"
       - "README.md"
       - "pyproject.toml"
       - "uv.lock"
@@ -18,9 +18,9 @@ on:
 permissions:
   contents: read
 
-concurrency:                     # 続けて push したときは、最後の1回だけ反映する
+concurrency:                     # 続けて push したときは、順番に動かして最後の1回を反映する
   group: release-zip-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false      # 差し替えは古い zip を消してから行うので、途中で止めるとリンクが切れる
 
 jobs:
   # 参加者の PC に近い環境で、zip を展開して起動できるかを確かめる
