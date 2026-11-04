@@ -41,6 +41,9 @@ def main():
         options={} if temperature is None else {"temperature": temperature},
     )
 
+    if not res.logprobs:
+        sys.exit("確率が返ってきませんでした。Ollama を最新版に更新してください。")
+
     print(f"モデル: {model}")
     print(f"質問　: {question}")
     if temperature is not None:
@@ -48,7 +51,7 @@ def main():
     print(f"答え　: {res.message.content}\n")
     print(f"  {'#':>3}  {pad('選ばれた', 16)} {'確率':>6}   ほかの候補")
     hesitated = 0
-    for i, step in enumerate(res.logprobs or [], start=1):
+    for i, step in enumerate(res.logprobs, start=1):
         p = math.exp(step.logprob)
         others = [c for c in (step.top_logprobs or []) if c.token != step.token][:OTHERS]
         others_text = "　".join(f"{show_token(c.token)} {math.exp(c.logprob) * 100:.0f}%" for c in others)
@@ -56,7 +59,7 @@ def main():
         hesitated += p < HESITATED
         print(f"  {i:>3}  {pad(show_token(step.token), 16)} {p * 100:5.1f}%   {others_text}{mark}")
 
-    print(f"\n{len(res.logprobs or [])}トークンのうち、迷った所（確率{HESITATED * 100:.0f}%未満）: {hesitated}か所")
+    print(f"\n{len(res.logprobs)}トークンのうち、迷った所（確率{HESITATED * 100:.0f}%未満）: {hesitated}か所")
 
 
 if __name__ == "__main__":

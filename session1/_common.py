@@ -2,6 +2,7 @@
 import sys
 import unicodedata
 
+import httpx
 import ollama
 
 SMALL_MODEL = "qwen3.5:0.8b"
@@ -78,6 +79,8 @@ def run(main) -> None:
         sys.exit("Ollama に接続できません。Ollama のアプリが起動しているか確認してください。")
     except ollama.ResponseError as e:
         sys.exit(f"Ollama からエラーが返りました：{e.error}")
+    except httpx.TransportError:  # 返事を少しずつ受け取っている途中で切れたとき（メモリ不足で Ollama が止まった場合など）
+        sys.exit("Ollama との接続が切れました。Ollama のアプリが起動しているか確認し、ほかのアプリを閉じてからもう一度試してください。")
     except Exception as e:
         if type(e).__name__ == "APIConnectionError":  # openai ライブラリ（2.2）の接続エラー
             sys.exit("Ollama に接続できません。Ollama のアプリが起動しているか確認してください。")
