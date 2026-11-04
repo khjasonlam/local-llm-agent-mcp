@@ -1,5 +1,5 @@
 # 運営用のうち、公開しないもの（tools と check_guide.md はコミットする）
-# （archive は過去の下書き、verify_results は verify.py の結果）
+# （archive は過去の下書き、verify_results は verify_session<回>.py の結果）
 internal/archive/
 internal/verify_results/
 

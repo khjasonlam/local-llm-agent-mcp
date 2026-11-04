@@ -50,7 +50,7 @@ uv run internal/tools/verify_session1.py --quick
 
 ## 5. 結果を送る
 
-`local-llm-agent-mcp` フォルダの中の `internal/verify_results/session1/` に、日時の名前のフォルダができています（第2回なら `session2/`）。そのフォルダを zip にして、Jason に送ってください。
+`local-llm-agent-mcp` フォルダの中の `internal/verify_results/session1/` に、日時の名前のフォルダができています（第2回なら `session2/`）。そのフォルダを zip にして、運営の担当者に送ってください。
 
 | | zip にする方法 |
 | --- | --- |
