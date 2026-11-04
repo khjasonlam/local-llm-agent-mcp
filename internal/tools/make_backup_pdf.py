@@ -23,7 +23,7 @@ from pathlib import Path
 # playwright はプロジェクトの .venv に入れていないので、エディタの「見つからない」警告だけ止める
 from playwright.sync_api import sync_playwright  # pyright: ignore[reportMissingImports]
 
-DATE = "2026-11-03"
+DATE = "2026-11-04"
 
 COMMON_CSS = """
 @page { size: A4; margin: 14mm 12mm; }
@@ -55,6 +55,8 @@ h2, h3, h4, .head { break-after: avoid; }
 
 S1_CSS = """
 #s5 { break-before: page; }
+/* 困ったときは項目が多く1ページに収まらないので、まとめの続きから始める */
+.faq-band { break-before: auto; margin-top: 24px; }
 """
 
 PREP_CSS = """
@@ -103,6 +105,14 @@ PREP_JS = r"""
     }
     s.prepend(chip(k));
     if (k === 'win') { const m = s.nextElementSibling; if (m && m.classList.contains('mac')) s.after(document.createTextNode(' ／ ')); }
+  });
+
+  // 文中のコマンドでメモリ別に言い分けているもの: 「A（メモリ16GB以上）／B（メモリ8GB）」に並べる
+  document.querySelectorAll('main code').forEach(c => {
+    const a = c.querySelector(':scope > span.m16'), b = c.querySelector(':scope > span.m8');
+    if (!a || !b) return;
+    const c2 = c.cloneNode(false); c2.append(b);
+    c.after(document.createTextNode('（メモリ16GB以上）／'), c2, document.createTextNode('（メモリ8GB）'));
   });
 
   // 手順の箇条書き（Windows / Mac で別の ol）に見出しを付ける
