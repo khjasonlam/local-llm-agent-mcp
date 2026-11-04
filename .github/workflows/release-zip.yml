@@ -35,7 +35,7 @@ jobs:
       UV_PYTHON: ${{ matrix.python }}
       PYTHONUTF8: "1"            # Windows のランナーで日本語の表示に失敗しないようにする
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v10.3.3
       - name: zip を展開して動かす
         run: uv run internal/tools/check_zip.py
@@ -46,7 +46,7 @@ jobs:
     env:
       UV_PYTHON: "3.10"          # pyright は環境の Python の標準ライブラリを見るので、3.10 の環境で動かす
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v10.3.3
       - run: uv sync --locked
       - name: 型チェック
@@ -62,7 +62,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       TAG: handson
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: zip を作る
         run: python3 internal/tools/make_zip.py   # 標準ライブラリだけで動く
