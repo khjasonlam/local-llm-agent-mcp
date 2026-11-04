@@ -11,19 +11,53 @@ on:
       - "pyproject.toml"
       - "uv.lock"
       - "internal/tools/make_zip.py"
+      - "internal/tools/check_zip.py"
       - ".github/workflows/release-zip.yml"
   workflow_dispatch:             # Actions の画面から手動でも動かせる
 
 permissions:
-  contents: write                # リリースの作成・ファイルの差し替えに必要
+  contents: read
 
 concurrency:                     # 続けて push したときは、最後の1回だけ反映する
-  group: release-zip
+  group: release-zip-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  zip:
+  # 参加者の PC に近い環境で、zip を展開して起動できるかを確かめる
+  check:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false           # 1つ失敗しても、ほかの組み合わせの結果も見る
+      matrix:
+        os: [windows-latest, macos-latest]
+        python: ["3.10", "3.15"] # 対応する最も古い版と、uv が選びうる最新の版
+    env:
+      UV_PYTHON: ${{ matrix.python }}
+      PYTHONUTF8: "1"            # Windows のランナーで日本語の表示に失敗しないようにする
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v10.3.3
+      - name: zip を展開して動かす
+        run: uv run internal/tools/check_zip.py
+
+  # Python 3.10 に無い機能を使っていないか、型の間違いがないかを確かめる
+  types:
     runs-on: ubuntu-latest
+    env:
+      UV_PYTHON: "3.10"          # pyright は環境の Python の標準ライブラリを見るので、3.10 の環境で動かす
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v10.3.3
+      - run: uv sync --locked
+      - name: 型チェック
+        run: uvx pyright@1.1.414 --pythonpath .venv/bin/python session1 internal/tools
+
+  zip:
+    needs: [check, types]        # 確認に失敗したら差し替えず、前の zip を残す
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write            # リリースの作成・ファイルの差し替えに必要
     env:
       GH_TOKEN: ${{ github.token }}
       TAG: handson

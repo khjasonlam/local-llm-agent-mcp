@@ -11,6 +11,7 @@
 | `session1/` | 第1回「ローカルLLMの中をのぞく」のスクリプト。`_common.py` は共通処理、`assets/` はサンプル画像・PDF | 入る |
 | `README.md` / `pyproject.toml` / `uv.lock` | 参加者向けの入口と依存関係 | 入る |
 | `internal/tools/make_zip.py` | 配布 zip を作る（標準ライブラリのみ） | 入らない |
+| `internal/tools/check_zip.py` | 配布 zip を展開して、Ollama なしで起動まで確かめる（CI でも実行） | 入らない |
 | `internal/tools/verify_session1.py` | 運営用。第1回の教材を実機でまとめて実行し、結果を `internal/verify_results/session1/<日時>/` に保存。回ごとに `verify_session<回>.py` を作る | 入らない |
 | `internal/tools/verify_common.py` | 各回の verify で共通の処理（環境の記録・スクリプトの実行・保存） | 入らない |
 | `internal/check_guide.md` | 運営メンバー向けの動作確認手順（verify_session<回>.py の使い方） | 入らない |
@@ -28,14 +29,15 @@ uv sync                                   # 依存関係を入れる
 uv run session1/2.1_api.py                # スクリプトの実行（参加者と同じ形。リポジトリのルートから）
 uv run internal/tools/verify_session1.py --quick   # 第1回の実機での一括確認（約10分。--quick なしで約20分）
 uv run internal/tools/make_zip.py         # dist/llm-agent-mcp-handson.zip を手元で作る（確認用）
+uv run internal/tools/check_zip.py        # 配布 zip を展開して起動まで確かめる（Ollama 不要。CI と同じ確認）
 ```
 
-- 実行には Ollama の起動と、モデル `qwen3.5:0.8b` ＋ `qwen3.5:4b` か `qwen3.5:2b` が必要。自動テストや CI での実行は無く、確認は回ごとの verify_session<回>.py を実機で回す。
+- 実行には Ollama の起動と、モデル `qwen3.5:0.8b` ＋ `qwen3.5:4b` か `qwen3.5:2b` が必要。CI では Ollama とモデルを動かさない（`check_zip.py` と型チェックのみ）ので、モデルを使う確認は回ごとの verify_session<回>.py を実機で回す。
 - `pyproject.toml` の依存を変えたら `uv lock` で `uv.lock` も更新してコミットする。
 
 ## 配布の仕組み
 
-- `main` に push すると `.github/workflows/release-zip.yml` が `make_zip.py` で zip を作り、リリース `handson` に差し替える。README の配布リンク（`releases/latest/download/...`）は常にこれを指す。
+- `main` に push すると `.github/workflows/release-zip.yml` が Windows / Mac × Python 3.10 / 3.15 の `check_zip.py` と型チェックを実行し、通ったら `make_zip.py` で zip を作り、リリース `handson` に差し替える。失敗すると差し替えず、前の zip が残る。README の配布リンク（`releases/latest/download/...`）は常にこれを指す。
 - zip の中身は `make_zip.py` の `PUBLIC` で決まる。`internal/` は `.gitattributes` の `export-ignore` で GitHub の Source code zip からも外している。
 - push した時点で参加者に配られる。配布物（`session1/`・README・pyproject・uv.lock）を壊す変更は push 前に確認する。
 
