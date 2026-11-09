@@ -12,6 +12,7 @@ playwright は受講者に入れたくないので、プロジェクトの依存
 
 使い方（ページの HTML を保存してから）:
     uv run internal/tools/make_backup_pdf.py s1.html internal/backup/第1回_当日資料.pdf s1
+    uv run internal/tools/make_backup_pdf.py s2.html internal/backup/第2回_当日資料.pdf s2
     uv run internal/tools/make_backup_pdf.py prep.html internal/backup/事前準備.pdf prep
 初めて使うときは、先に Chromium を入れる:
     uv run --with playwright playwright install chromium
@@ -53,10 +54,15 @@ h2, h3, h4, .head { break-after: avoid; }
 .rail { position: absolute; left: 0; top: 0; bottom: 0; }
 """
 
-S1_CSS = """
-#s5 { break-before: page; }
+# 当日資料（第1回・第2回で共通の作り）
+HANDOUT_CSS = """
 /* 困ったときは項目が多く1ページに収まらないので、まとめの続きから始める */
 .faq-band { break-before: auto; margin-top: 24px; }
+"""
+
+# 第1回の当日資料だけ: まとめが前のページの下で切れるので、新しいページから始める
+S1_BREAK_CSS = """
+#s5 { break-before: page; }
 """
 
 PREP_CSS = """
@@ -146,26 +152,36 @@ PREP_JS = r"""
 }
 """
 
-S1_JS = r"""
+HANDOUT_JS = r"""
 () => 'Webページのバックアップ（DATE時点）。折りたたみ部分（実行結果の例・解説・もっと試す・困ったとき）は、すべて開いて載せています。'
 """
 
+# ページの種類 → (足す CSS, 実行する JS, 縮小率)。種類はここに書いたものだけ受け付ける
+KINDS = {
+    "s1": (HANDOUT_CSS + S1_BREAK_CSS, HANDOUT_JS, 0.95),
+    "s2": (HANDOUT_CSS, HANDOUT_JS, 0.95),
+    "prep": (PREP_CSS, PREP_JS, 0.9),
+}
+
 
 def main():
+    if len(sys.argv) != 4 or sys.argv[3] not in KINDS:
+        sys.exit(f"使い方: uv run internal/tools/make_backup_pdf.py ページ.html 出力.pdf 種類（{' / '.join(KINDS)}）")
     src, out, kind = sys.argv[1], sys.argv[2], sys.argv[3]
+    css, js, scale = KINDS[kind]
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page(viewport={"width": 820, "height": 1200}, color_scheme="light")
         page.goto(Path(src).resolve().as_uri(), wait_until="load")
-        page.add_style_tag(content=COMMON_CSS + (S1_CSS if kind == "s1" else PREP_CSS))
-        note = page.evaluate((PREP_JS if kind == "prep" else S1_JS).replace("DATE", DATE))
+        page.add_style_tag(content=COMMON_CSS + css)
+        note = page.evaluate(js.replace("DATE", DATE))
         page.evaluate("""(note) => {
           document.querySelectorAll('details').forEach(d => d.open = true);
           const p = document.createElement('p'); p.className = 'backup-note'; p.textContent = note;
           const facts = document.querySelector('header.top dl.facts');
           (facts || document.querySelector('header.top .wrap')).after(p);
         }""", note)
-        page.pdf(path=out, format="A4", print_background=True, scale=0.9 if kind == "prep" else 0.95,
+        page.pdf(path=out, format="A4", print_background=True, scale=scale,
                  margin={"top": "14mm", "bottom": "14mm", "left": "12mm", "right": "12mm"})
         browser.close()
     print("作成:", out)
