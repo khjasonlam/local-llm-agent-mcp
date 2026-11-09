@@ -23,7 +23,8 @@ TASKS = [
     "「生成AIのしくみ」を借りてください",
 ]
 MAX_STEPS = 6
-MAX_TOKENS = 2048   # 1回の返事の上限（思考ありで考えすぎて終わらないとき用）
+MAX_TOKENS = 1024        # 1回の返事の上限（3.2 と同じ）
+MAX_TOKENS_THINK = 2048  # 思考ありは考える分だけ長く書くので、上限を大きくする
 
 
 def main():
@@ -37,7 +38,7 @@ def main():
         print('\n使い方: uv run session2/4.1_compare.py 1　（または "好きな課題"）')
         return
 
-    if args[0].isdigit():
+    if args[0].isdecimal():   # 「1」「１」は番号として扱う（「①」は課題の文として扱う）
         number = int(args[0])
         if not 1 <= number <= len(TASKS):
             sys.exit(f"番号は 1〜{len(TASKS)} で指定してください。")
@@ -73,7 +74,7 @@ def solve(model: str, task: str, think: bool) -> dict:
 
     for step in range(1, MAX_STEPS + 1):
         res = ollama.chat(model=model, messages=messages, tools=TOOLS, think=think,
-                          options={"num_predict": MAX_TOKENS})
+                          options={"num_predict": MAX_TOKENS_THINK if think else MAX_TOKENS})
         messages.append(res.message)
         if think and res.message.thinking:
             print(f"  （{step}回目：{len(res.message.thinking)}文字考えた）")

@@ -19,13 +19,21 @@ from verify_common import ROOT, environment, log, results_dir, run_script, save
 SMALL = "qwen3.5:0.8b"
 BIG_CANDIDATES = ["qwen3.5:4b", "qwen3.5:2b"]
 MAX_STEPS = 6
-MAX_TOKENS = 2048
+MAX_TOKENS = 1024        # 教材の 3.2・4.1 と同じ上限
+MAX_TOKENS_THINK = 2048  # 教材の 4.1 --think と同じ上限
 
-# 教材と同じ架空の図書館（session2/_library.py）を読み込む
-_spec = importlib.util.spec_from_file_location("_library", ROOT / "session2" / "_library.py")
-assert _spec and _spec.loader
-lib = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(lib)
+
+def load_session2(name: str):
+    """session2/ のモジュールを読み込む（教材と同じツール・同じ処理で測るため）。"""
+    spec = importlib.util.spec_from_file_location(name, ROOT / "session2" / f"{name}.py")
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+lib = load_session2("_library")     # 架空の図書館のツール
+common = load_session2("_common")   # free_memory() を使う
 
 
 def first_is(name: str, **want):
@@ -38,6 +46,20 @@ def first_is(name: str, **want):
     return check
 
 
+UNAVAILABLE_WORDS = ("貸出中", "貸し出し中", "貸出し中", "借りられません", "借りることができません", "貸し出されて")
+
+
+def says_unavailable(answer: str) -> bool:
+    """答えに「借りられない」という意味の言葉があるか。"""
+    return any(w in answer for w in UNAVAILABLE_WORDS)
+
+
+def tried_to_borrow(calls, book_id: str) -> bool:
+    """borrow_book を book_id で使おうとしたか（断られた場合も含む）。"""
+    return any(c["name"] == "borrow_book" and str(c["args"].get("book_id", "")).strip().upper() == book_id
+               for c in calls)
+
+
 # Agent の課題の候補。check で「うまくいったか」を機械的に判定する（最後は人が答えを読んで確かめる）
 CANDIDATES = [
     ("single", "B001 の本は、いま借りられますか？", "最初に check_availability(B001)",
@@ -46,10 +68,12 @@ CANDIDATES = [
      first_is("search_books", keyword="python")),
     ("chain", "「AIエージェント入門」を借りたいです。借りられるなら借りてください", "B005 が貸出された",
      lambda calls, answer: "B005" in lib.loans),
-    ("multi", "AIの本で、いま借りられるものをすべて教えて", "答えに B003 と B005 の書名がある",
-     lambda calls, answer: "やさしい機械学習" in answer and "AIエージェント入門" in answer),
-    ("unavailable", "「生成AIのしくみ」を借りてください", "B004 を借りず、貸出中と答える",
-     lambda calls, answer: lib.loans.get("B004") == lib.FIRST_LOANS["B004"] and "貸出中" in answer),
+    ("multi", "AIの本で、いま借りられるものをすべて教えて",
+     "答えに B003 と B005 の書名がある。B004（貸出中）の書名を出すなら、借りられないことも書いている",
+     lambda calls, answer: "やさしい機械学習" in answer and "AIエージェント入門" in answer
+     and ("生成AIのしくみ" not in answer or says_unavailable(answer))),
+    ("unavailable", "「生成AIのしくみ」を借りてください", "borrow_book(B004) を使おうとせず、借りられないと答える",
+     lambda calls, answer: not tried_to_borrow(calls, "B004") and says_unavailable(answer)),
 ]
 
 
@@ -64,6 +88,10 @@ def main():
     if SMALL not in env["models"] or not big:
         log(f"モデルが足りません。必要: {SMALL} と {' / '.join(BIG_CANDIDATES)} のどちらか。今あるもの: {env['models']}")
         sys.exit(1)
+
+    # 0) 2.2 で手書きしたプロンプトの形が合っているか確かめるため、モデルのテンプレートを保存する
+    info = ollama.show(big)
+    save(out / "02_template.json", {"model": big, "modelfile": info.modelfile, "template": info.template})
 
     # 1) 教材のスクリプトを、参加者と同じ形で実行する
     scripts = [
@@ -102,14 +130,16 @@ def main():
 
 
 def agent(model: str, task: str, think: bool) -> dict:
-    """教材の 3.2 と同じ Agent のくり返しを、表示なしで実行して記録する。"""
+    """教材の 4.1 の solve() と同じ Agent のくり返しを、表示なしで実行して記録する。"""
     lib.reset()
+    common.free_memory(keep=model)   # もう1つのモデルをメモリから外す（8GB の PC で両方が載らないように）
+    ollama.generate(model=model)      # モデルを先に読み込んでおく（読み込みの時間を秒数に入れない）
     start = time.perf_counter()
     messages: list = [{"role": "user", "content": task}]
     calls, thinking_chars = [], 0
     for step in range(1, MAX_STEPS + 1):
         res = ollama.chat(model=model, messages=messages, tools=lib.TOOLS, think=think,
-                          options={"num_predict": MAX_TOKENS})
+                          options={"num_predict": MAX_TOKENS_THINK if think else MAX_TOKENS})
         messages.append(res.message)
         thinking_chars += len(res.message.thinking or "")
         if not res.message.tool_calls:

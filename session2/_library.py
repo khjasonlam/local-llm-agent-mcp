@@ -24,25 +24,39 @@ BOOKS = [
     {"id": "B010", "title": "週末キャンプの本", "author": "大野 隼人", "genre": "くらし"},
 ]
 
-# 貸出中の本と返却予定日。最初から何冊かは貸出中にしておく
-FIRST_LOANS = {"B002": "2026-11-20", "B004": "2026-11-27", "B010": "2026-12-04"}
-loans = dict(FIRST_LOANS)
+# 最初から貸出中にしておく本と、返却予定日が今日から何日後か
+FIRST_LOANS = {"B002": 10, "B004": 17, "B010": 24}
 
 LOAN_DAYS = 14  # 貸出期間は2週間（第1回の sample.pdf の利用案内と同じ）
+
+
+def first_loans() -> dict:
+    """最初の貸出の記録（本の番号 → 返却予定日）を、今日の日付から作る。"""
+    return {book_id: (date.today() + timedelta(days=days)).isoformat()
+            for book_id, days in FIRST_LOANS.items()}
+
+
+loans = first_loans()   # 貸出中の本と返却予定日（借りると増える）
 
 
 def reset() -> None:
     """貸出の状態を最初に戻す（同じ課題を別のモデルでもう一度試すときに使う）。"""
     loans.clear()
-    loans.update(FIRST_LOANS)
+    loans.update(first_loans())
 
 
 # ── ツールの中身（ふつうの Python の関数） ─────────────────────────
 def search_books(keyword: str) -> dict:
-    """書名・著者名・分野に keyword を含む本を探す。"""
+    """書名・著者名・分野に keyword を含む本を探す。
+
+    LLM は「Pythonの本」「Python 本」のような言葉で探してくることがあるので、
+    「の本」と「本」は除き、スペースで区切った言葉がすべて含まれる本を返す。
+    """
     keyword = str(keyword).strip()
+    words = [w.lower() for w in keyword.replace("の本", " ").split() if w != "本"]
     hits = [b for b in BOOKS
-            if keyword.lower() in (b["title"] + b["author"] + b["genre"]).lower()]
+            if words and all(any(w in b[field].lower() for field in ("title", "author", "genre"))
+                             for w in words)]
     if not hits:
         return {"結果": f"「{keyword}」を含む本は見つかりませんでした"}
     return {"見つかった本": [{"番号": b["id"], "書名": b["title"], "著者": b["author"]} for b in hits]}
@@ -133,10 +147,16 @@ def call_tool(name: str, arguments, functions: dict = FUNCTIONS) -> str:
     func = functions.get(name)
     if func is None:
         result = {"エラー": f"{name} というツールはありません。使えるのは {', '.join(functions)} です"}
-    else:
-        try:
-            result = func(**dict(arguments or {}))
-        except TypeError:  # 引数の名前や数がちがうとき
-            names = ", ".join(inspect.signature(func).parameters) or "なし"
-            result = {"エラー": f"引数がまちがっています。{name} の引数は {names} です"}
+        return json.dumps(result, ensure_ascii=False)
+
+    # 実行する前に、引数の名前と数が関数に合っているかを確かめる
+    signature = inspect.signature(func)
+    try:
+        bound = signature.bind(**dict(arguments or {}))
+    except TypeError:
+        names = ", ".join(signature.parameters) or "なし"
+        result = {"エラー": f"引数がまちがっています。{name} の引数は {names} です"}
+        return json.dumps(result, ensure_ascii=False)
+
+    result = func(*bound.args, **bound.kwargs)
     return json.dumps(result, ensure_ascii=False)
