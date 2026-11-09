@@ -8,7 +8,7 @@
 
 | パス | 内容 | 配布 zip に入るか |
 | --- | --- | --- |
-| `session1/` | 第1回「ローカルLLMの中をのぞく」のスクリプト。`_common.py` は共通処理、`assets/` はサンプル画像・PDF | 入る |
+| `session1/` | 第1回「ローカルLLMを使って、AIの中をのぞく」のスクリプト。`_common.py` は共通処理、`assets/` はサンプル画像・PDF | 入る |
 | `README.md` / `pyproject.toml` / `uv.lock` | 参加者向けの入口と依存関係 | 入る |
 | `internal/tools/make_zip.py` | 配布 zip を作る（標準ライブラリのみ） | 入らない |
 | `internal/tools/check_zip.py` | 配布 zip を展開して、Ollama なしで起動まで確かめる（CI でも実行） | 入らない |

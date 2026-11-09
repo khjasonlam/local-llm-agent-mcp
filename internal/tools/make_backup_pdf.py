@@ -23,7 +23,7 @@ from pathlib import Path
 # playwright はプロジェクトの .venv に入れていないので、エディタの「見つからない」警告だけ止める
 from playwright.sync_api import sync_playwright  # pyright: ignore[reportMissingImports]
 
-DATE = "2026-11-04"
+DATE = "2026-11-09"
 
 COMMON_CSS = """
 @page { size: A4; margin: 14mm 12mm; }
