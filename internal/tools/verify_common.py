@@ -47,8 +47,9 @@ def run_script(out: Path, folder: str, name: str, args: list[str]) -> None:
     log(f"実行: {folder}/{' '.join(args)}")
     start = time.perf_counter()
     env = {**os.environ, "PYTHONIOENCODING": "utf-8"}
+    # stdin は空にする（y/n を聞くスクリプトでも止まらず、「入力なし」として進む）
     p = subprocess.run([sys.executable, str(ROOT / folder / args[0]), *args[1:]], cwd=ROOT, env=env,
-                       capture_output=True, text=True, encoding="utf-8", errors="replace")
+                       stdin=subprocess.DEVNULL, capture_output=True, text=True, encoding="utf-8", errors="replace")
     secs = time.perf_counter() - start
     (out / f"1x_{name}.txt").write_text(
         f"$ uv run {folder}/{' '.join(args)}\n# 終了コード {p.returncode} / {secs:.1f}秒\n\n"

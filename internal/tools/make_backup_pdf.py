@@ -12,6 +12,7 @@ playwright は受講者に入れたくないので、プロジェクトの依存
 
 使い方（ページの HTML を保存してから）:
     uv run internal/tools/make_backup_pdf.py s1.html internal/backup/第1回_当日資料.pdf s1
+    uv run internal/tools/make_backup_pdf.py s2.html internal/backup/第2回_当日資料.pdf s2
     uv run internal/tools/make_backup_pdf.py prep.html internal/backup/事前準備.pdf prep
 初めて使うときは、先に Chromium を入れる:
     uv run --with playwright playwright install chromium
@@ -53,6 +54,7 @@ h2, h3, h4, .head { break-after: avoid; }
 .rail { position: absolute; left: 0; top: 0; bottom: 0; }
 """
 
+# 当日資料（第1回・第2回で共通の作り）
 S1_CSS = """
 #s5 { break-before: page; }
 /* 困ったときは項目が多く1ページに収まらないので、まとめの続きから始める */
@@ -157,7 +159,8 @@ def main():
         browser = p.chromium.launch()
         page = browser.new_page(viewport={"width": 820, "height": 1200}, color_scheme="light")
         page.goto(Path(src).resolve().as_uri(), wait_until="load")
-        page.add_style_tag(content=COMMON_CSS + (S1_CSS if kind == "s1" else PREP_CSS))
+        # 第2回の当日資料は、第1回と同じ作りなので同じ CSS を使う
+        page.add_style_tag(content=COMMON_CSS + (S1_CSS if kind in ("s1", "s2") else PREP_CSS))
         note = page.evaluate((PREP_JS if kind == "prep" else S1_JS).replace("DATE", DATE))
         page.evaluate("""(note) => {
           document.querySelectorAll('details').forEach(d => d.open = true);

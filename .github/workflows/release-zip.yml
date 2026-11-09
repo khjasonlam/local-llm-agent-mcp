@@ -50,7 +50,7 @@ jobs:
       - uses: astral-sh/setup-uv@v10.3.3
       - run: uv sync --locked
       - name: 型チェック
-        run: uvx pyright@1.1.414 --pythonpath .venv/bin/python session1 internal/tools
+        run: uvx pyright@1.1.414 --pythonpath .venv/bin/python session1 session2 internal/tools
 
   zip:
     needs: [check, types]        # 確認に失敗したら差し替えず、前の zip を残す

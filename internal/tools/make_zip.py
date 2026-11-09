@@ -13,7 +13,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 TOP = "llm-agent-mcp-handson"  # 展開したときのフォルダ名
-PUBLIC = ["README.md", "pyproject.toml", "uv.lock", "session1"]
+PUBLIC = ["README.md", "pyproject.toml", "uv.lock", "session1", "session2"]
 SKIP = {"__pycache__", ".DS_Store"}
 
 
