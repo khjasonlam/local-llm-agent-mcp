@@ -13,6 +13,15 @@ on:
       - "internal/tools/make_zip.py"
       - "internal/tools/check_zip.py"
       - ".github/workflows/release-zip.yml"
+  pull_request:                  # PR でも確認だけ動かす（zip の差し替えは main のときだけ）
+    paths:
+      - "session*/**"
+      - "README.md"
+      - "pyproject.toml"
+      - "uv.lock"
+      - "internal/tools/make_zip.py"
+      - "internal/tools/check_zip.py"
+      - ".github/workflows/release-zip.yml"
   workflow_dispatch:             # Actions の画面から手動でも動かせる
 
 permissions:
