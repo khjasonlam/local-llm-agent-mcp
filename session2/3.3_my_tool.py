@@ -4,6 +4,9 @@ LLM は今日の日付を知らない（学習したときの文章しか知ら�
 「今日の日付を返す」ツールを足すと、日付を使う質問に答えられるようになる。
 ツールを足す手順は ①関数を書く ②説明を書く ③一覧に足す の3つだけ。
 
+この節では、調べるツール（search_books・check_availability）だけを使い、borrow_book は外す。
+本を借りると返却期限の日付が返ってくるので、そこから今日の日付がわかってしまうため。
+
 実行:  uv run session2/3.3_my_tool.py
        uv run session2/3.3_my_tool.py "好きな質問"
        uv run session2/3.3_my_tool.py --without   自分のツールを外して、同じ質問をする
@@ -19,6 +22,10 @@ from _library import FUNCTIONS, TOOLS, call_tool
 
 MAX_STEPS = 6
 WEEKDAYS = "月火水木金土日"
+
+# 調べるツールだけにする（borrow_book を外す）
+BASE_TOOLS = [t for t in TOOLS if t["function"]["name"] != "borrow_book"]
+BASE_FUNCTIONS = {name: func for name, func in FUNCTIONS.items() if name != "borrow_book"}
 
 
 # ① 関数を書く（ふつうの Python の関数）
@@ -37,16 +44,20 @@ MY_TOOL = {
     },
 }
 
+# ③ 一覧に足す（LLM に渡す説明と、実際に実行する関数の両方）
+MY_TOOLS = BASE_TOOLS + [MY_TOOL]
+MY_FUNCTIONS = {**BASE_FUNCTIONS, "get_today": get_today}
+
 
 def main():
     model = big_model()
     args = [a for a in sys.argv[1:] if a != "--without"]
     without = "--without" in sys.argv[1:]
-    question = args[0] if args else "B003 の本を今日借りたら、返却期限は何月何日ですか？貸出期間は2週間です"
+    question = args[0] if args else "B002 の本は、あと何日で返ってきますか？"
 
-    # ③ 一覧に足す（--without のときは足さない）
-    tools = TOOLS if without else TOOLS + [MY_TOOL]
-    functions = FUNCTIONS if without else {**FUNCTIONS, "get_today": get_today}
+    # --without のときは、自分のツールを足す前の一覧を使う
+    tools = BASE_TOOLS if without else MY_TOOLS
+    functions = BASE_FUNCTIONS if without else MY_FUNCTIONS
 
     print(f"モデル: {model}")
     print(f"質問: {question}")

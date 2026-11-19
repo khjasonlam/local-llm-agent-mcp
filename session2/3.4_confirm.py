@@ -1,11 +1,12 @@
-"""4.2（もっと試す）記録を変えるツールの前に、人の確認を挟む
+"""3.4（もっと試す）記録を変えるツールの前に、人の確認を挟む
 
 3.2 の Agent は、LLM が「借りる」と決めたら、そのまま本を借りてしまう。
 調べるだけのツールはそのまま実行し、記録を変えるツール（borrow_book）だけは、実行する前に人に y/n で確かめる。
 n と答えると、ツールは実行せず「取りやめた」という結果を LLM に返す。
+LLM は結果の文を読むだけなので、「エラーではない」ことも文ではっきり伝える（書かないと、エラーと読みちがえることがある）。
 
-実行:  uv run session2/4.2_confirm.py
-       uv run session2/4.2_confirm.py "好きな質問"
+実行:  uv run session2/3.4_confirm.py
+       uv run session2/3.4_confirm.py "好きな質問"
 """
 import json
 import sys
@@ -40,7 +41,8 @@ def main():
             name, args = call.function.name, call.function.arguments
             print(f"LLM: {name} を {json.dumps(args, ensure_ascii=False)} で使いたい")
             if name in NEED_CONFIRM and not confirm(f"  {name} を実行してよいですか？ [y/n] "):
-                result = json.dumps({"結果": "利用者が取りやめたので、実行しませんでした"}, ensure_ascii=False)
+                result = json.dumps({"結果": "利用者が取りやめたので、実行していません。エラーではありません"},
+                                    ensure_ascii=False)
             else:
                 result = call_tool(name, args)
             print(f"  → 結果: {result}")
