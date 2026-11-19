@@ -27,7 +27,7 @@ def results_dir(session: int) -> Path:
 
 
 def environment() -> dict:
-    """Ollama・Python・OS の版と、入っているモデルを調べる。Ollama に接続できなければ終了する。"""
+    """Ollama・Python・OS の版、メモリ、入っているモデルを調べる。Ollama に接続できなければ終了する。"""
     try:
         server = httpx.get("http://localhost:11434/api/version", timeout=5).json().get("version")
     except Exception as e:  # noqa: BLE001
@@ -38,6 +38,10 @@ def environment() -> dict:
                          capture_output=True, text=True).stdout.strip()
     env = {"ollama_server": server, "ollama_python": lib, "python": sys.version.split()[0],
            "os": f"{platform.system()} {platform.release()} {platform.machine()}", "models": models}
+    try:   # PC のメモリ（GB）。Windows では取れないので省く
+        env["memory_gb"] = round(os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES") / 2**30, 1)
+    except (AttributeError, ValueError, OSError):
+        pass
     log(json.dumps(env, ensure_ascii=False))
     return env
 
