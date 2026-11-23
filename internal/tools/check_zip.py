@@ -17,7 +17,8 @@ from make_zip import PUBLIC, ROOT, TOP, build, files
 
 ZIP_PATH = ROOT / "dist" / "llm-agent-mcp-handson.zip"
 TOP_FILES = ["README.md", "pyproject.toml", "uv.lock"]
-EXPECTED_MESSAGES = ["Ollama に接続できません", "使い方:"]  # 正常に起動できたときに出る案内
+# 正常に起動できたときに出る案内。後ろの2つは、LLM を使わないスクリプト（第3回の 0・3.1）が最後まで動いたときの表示
+EXPECTED_MESSAGES = ["Ollama に接続できません", "使い方:", "準備は完了です", "サーバーを終了しました"]
 ENV = {
     **{k: v for k, v in os.environ.items() if k != "VIRTUAL_ENV"},  # 展開先の環境を使わせる
     "OLLAMA_HOST": "127.0.0.1:1",  # 手元で Ollama が動いていても接続させない
@@ -41,6 +42,7 @@ def check_script(project: Path, script: Path) -> list[str]:
     result = subprocess.run(
         ["uv", "run", "--locked", name],
         cwd=project, env=ENV, capture_output=True, timeout=300,
+        stdin=subprocess.DEVNULL,  # Enter や y/n を待つスクリプトでも止まらないようにする
     )
     output = (result.stdout + result.stderr).decode("utf-8", errors="replace")
     if "Traceback" in output or not any(m in output for m in EXPECTED_MESSAGES):

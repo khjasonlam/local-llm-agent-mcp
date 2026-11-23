@@ -10,11 +10,13 @@
 | --- | --- | --- |
 | `session1/` | 第1回「ローカルLLMを使って、AIの中をのぞく」のスクリプト。`_common.py` は共通処理、`assets/` はサンプル画像・PDF | 入る |
 | `session2/` | 第2回「LLMに道具を持たせる：Agentの中をのぞく」のスクリプト。`_common.py` は共通処理（session1 のものをコピーして必要な分だけ残したもの）、`_library.py` は LLM に使わせるツール（架空の社内図書館。受講者に読んでもらうファイル） | 入る |
+| `session3/` | 第3回「道具の差し込み口をそろえる：MCPの中をのぞく」のスクリプト。`_order_server.py`・`_chat_server.py` は架空の外部サービスの MCP サーバー（公式の `mcp` ライブラリの `MCPServer` で書く）、`_library.py` は内蔵の図書館のツール（session2 のコピー）、`_agent.py` は 4.1・4.2 で共通の Agent の本体、`_common.py` の `Server` は MCP サーバーとのやりとり（JSON を1行ずつ。クライアント側は公式ライブラリを使わず、3.1 で見せるやりとりをそのまま使う） | 入る |
 | `README.md` / `pyproject.toml` / `uv.lock` | 参加者向けの入口と依存関係 | 入る |
 | `internal/tools/make_zip.py` | 配布 zip を作る（標準ライブラリのみ） | 入らない |
 | `internal/tools/check_zip.py` | 配布 zip を展開して、Ollama なしで起動まで確かめる（CI でも実行） | 入らない |
 | `internal/tools/verify_session1.py` | 運営用。第1回の教材を実機でまとめて実行し、結果を `internal/verify_results/session1/<日時>/` に保存。回ごとに `verify_session<回>.py` を作る | 入らない |
 | `internal/tools/verify_session2.py` | 運営用。第2回の教材の実行に加え、モデル × 思考あり／なし で Agent の課題の成功率を測る（`20_tool_call_candidates.json`・`41_compare_summary.md`） | 入らない |
+| `internal/tools/verify_session3.py` | 運営用。第3回の教材の実行に加え、4.1・4.2 を y/n に答えながらくり返し実行して、発注・通知まで進めた割合を測る（`30_agent_candidates.json`・`31_agent_summary.md`） | 入らない |
 | `internal/tools/verify_common.py` | 各回の verify で共通の処理（環境の記録・スクリプトの実行・保存） | 入らない |
 | `internal/check_guide.md` | 運営メンバー向けの動作確認手順（verify_session<回>.py の使い方） | 入らない |
 | `internal/tools/make_backup_pdf.py` | ページの HTML から PDF 控えを作る（`uv run` で実行。playwright は PEP 723 の欄で指定し、プロジェクトの依存関係には入れない）。ページを直したら控えも作り直す | 入らない |
@@ -22,7 +24,7 @@
 | `internal/archive/` | 過去の下書き（Agent・MCP の図書貸出ワークブック等）。gitignore 済み。第2回・第3回の素材 | 入らない |
 
 当日の手順書・事前準備ページは Claude Artifact で公開しており、このリポジトリには無い（README からリンク）。
-第2回（Agent）はスクリプトと当日資料（Artifact）を作成済みで、Mac 16GB（4b）では実機で確認済み。8GB の PC（2b）・Windows での確認が未完了。第3回（MCP、可能であれば）は未作成。
+第2回（Agent）はスクリプトと当日資料（Artifact）を作成済みで、Mac 16GB（4b）では実機で確認済み。8GB の PC（2b）・Windows での確認が未完了。第3回（MCP）はスクリプトを作成済みで、LLM を使わない部分（0・3.1）だけ確認済み。4.1・4.2 の実機での確認（`verify_session3.py`）と、当日資料・事前準備ページの仕上げが未完了。
 
 ## コマンド
 
@@ -31,6 +33,7 @@ uv sync                                   # 依存関係を入れる
 uv run session1/2.1_api.py                # スクリプトの実行（参加者と同じ形。リポジトリのルートから）
 uv run internal/tools/verify_session1.py --quick   # 第1回の実機での一括確認（約10分。--quick なしで約20分）
 uv run internal/tools/verify_session2.py --quick   # 第2回の実機での一括確認
+uv run internal/tools/verify_session3.py --quick   # 第3回の実機での一括確認
 uv run internal/tools/make_zip.py         # dist/llm-agent-mcp-handson.zip を手元で作る（確認用）
 uv run internal/tools/check_zip.py        # 配布 zip を展開して起動まで確かめる（Ollama 不要。CI と同じ確認）
 ```
@@ -42,7 +45,7 @@ uv run internal/tools/check_zip.py        # 配布 zip を展開して起動ま�
 
 - `main` に push すると `.github/workflows/release-zip.yml` が Windows / Mac × Python 3.10 / 3.15 の `check_zip.py` と型チェックを実行し、通ったら `make_zip.py` で zip を作り、リリース `handson` に差し替える。失敗すると差し替えず、前の zip が残る。README の配布リンク（`releases/latest/download/...`）は常にこれを指す。
 - zip の中身は `make_zip.py` の `PUBLIC` で決まる。`internal/` は `.gitattributes` の `export-ignore` で GitHub の Source code zip からも外している。
-- push した時点で参加者に配られる。配布物（`session1/`・`session2/`・README・pyproject・uv.lock）を壊す変更は push 前に確認する。
+- push した時点で参加者に配られる。配布物（`session1/`・`session2/`・`session3/`・README・pyproject・uv.lock）を壊す変更は push 前に確認する。
 
 ## 新しい回（session2/ など）を足すときに更新する場所
 
@@ -69,7 +72,7 @@ uv run internal/tools/check_zip.py        # 配布 zip を展開して起動ま�
 
 - 使うモデルは PC の中だけで動くもの（`qwen3.5:0.8b`、`qwen3.5:4b`、`qwen3.5:2b`）。名前に `cloud` が付くモデルは使わない・勧めない。
 - 教材に入れる入力・サンプルはダミーだけ（業務データ・実在の人物の情報は入れない）。`assets/sample.pdf` も架空の社内図書館の案内。
-- モデル名は `session1/_common.py`、`session2/_common.py`、`verify_session1.py`、`verify_session2.py`、`README.md`、`check_guide.md` に重複して書かれている。変えるときは全部そろえる。
+- モデル名は `session1/_common.py`、`session2/_common.py`、`session3/_common.py`、`verify_session1.py`、`verify_session2.py`、`verify_session3.py`、`README.md`、`check_guide.md` に重複して書かれている。変えるときは全部そろえる。
 - 公開リポジトリなので、社名・社内システム名・個人情報を書かない。
 - 受講者にリポジトリ（GitHub のページ）は見せない。当日資料・事前準備ページからリポジトリへのリンクを張らず、受講者に必要な説明はページ自体か配布 zip の README に書く（zip のダウンロードリンクだけは例外）。
 

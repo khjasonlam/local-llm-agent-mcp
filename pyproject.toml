@@ -7,6 +7,7 @@ dependencies = [
     "ollama>=0.6.1",   # Ollama 公式の Python ライブラリ（0.6.1 以降で確率 logprobs が取れる）
     "openai>=2",       # OpenAI 互換の書き方（2.2）で使う
     "pypdf>=5",        # PDF から文字を取り出す（3.4）
+    "mcp>=2.3,<3",     # MCP 公式の Python ライブラリ（第3回のサーバー側で使う。2.x で書き方が変わったので 2.x に固定）
 ]
 
 [tool.uv]
@@ -19,4 +20,5 @@ typeCheckingMode = "standard"   # 標準の厳しさにする
 executionEnvironments = [
     { root = "session1", extraPaths = ["session1"] },
     { root = "session2", extraPaths = ["session2"] },
+    { root = "session3", extraPaths = ["session3"] },
 ]
