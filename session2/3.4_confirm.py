@@ -3,7 +3,8 @@
 3.2 の Agent は、LLM が「借りる」と決めたら、そのまま本を借りてしまう。
 調べるだけのツールはそのまま実行し、記録を変えるツール（borrow_book）だけは、実行する前に人に y/n で確かめる。
 n と答えると、ツールは実行せず「取りやめた」という結果を LLM に返す。
-LLM は結果の文を読むだけなので、「エラーではない」ことも文ではっきり伝える（書かないと、エラーと読みちがえることがある）。
+LLM は結果の文を読むだけなので、何が起きたか（借りていない・本の貸出の状態は変わっていない）を事実で書く。
+それでも読みちがえることはある（ツールの結果も、LLM にとってはただの文字）。
 
 実行:  uv run session2/3.4_confirm.py
        uv run session2/3.4_confirm.py "好きな質問"
@@ -41,7 +42,7 @@ def main():
             name, args = call.function.name, call.function.arguments
             print(f"LLM: {name} を {json.dumps(args, ensure_ascii=False)} で使いたい")
             if name in NEED_CONFIRM and not confirm(f"  {name} を実行してよいですか？ [y/n] "):
-                result = json.dumps({"結果": "利用者が取りやめたので、実行していません。エラーではありません"},
+                result = json.dumps({"結果": "利用者が取りやめたので、借りていません。本の貸出の状態は変わっていません"},
                                     ensure_ascii=False)
             else:
                 result = call_tool(name, args)

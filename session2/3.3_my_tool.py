@@ -1,15 +1,17 @@
 """3.3（もっと試す）自分のツールを1つ足す
 
 LLM は今日の日付を知らない（学習したときの文章しか知らない）。
-「今日の日付を返す」ツールを足すと、日付を使う質問に答えられるようになる。
+「今日の日付を返す」ツールを足すと、LLM がそのツールを「使える」ようになる。
+ただし、使うかどうかは LLM が決める。思考なしでは使わずに答えることも多いので、思考ありとも比べる。
 ツールを足す手順は ①関数を書く ②説明を書く ③一覧に足す の3つだけ。
 
 この節では、調べるツール（search_books・check_availability）だけを使い、borrow_book は外す。
 本を借りると返却期限の日付が返ってくるので、そこから今日の日付がわかってしまうため。
 
-実行:  uv run session2/3.3_my_tool.py
+実行:  uv run session2/3.3_my_tool.py              思考なしで質問する
+       uv run session2/3.3_my_tool.py --think      思考ありで、同じ質問をする
        uv run session2/3.3_my_tool.py "好きな質問"
-       uv run session2/3.3_my_tool.py --without   自分のツールを外して、同じ質問をする
+       uv run session2/3.3_my_tool.py --without    自分のツールを外して、同じ質問をする（余裕があれば）
 """
 import json
 import sys
@@ -21,6 +23,8 @@ from _common import big_model, heading, run
 from _library import FUNCTIONS, TOOLS, call_tool
 
 MAX_STEPS = 6
+MAX_TOKENS = 1024        # 1回の返事の上限（3.2 と同じ）
+MAX_TOKENS_THINK = 2048  # 思考ありは考える分だけ長く書くので、上限を大きくする（4.1 と同じ）
 WEEKDAYS = "月火水木金土日"
 
 # 調べるツールだけにする（borrow_book を外す）
@@ -51,8 +55,9 @@ MY_FUNCTIONS = {**BASE_FUNCTIONS, "get_today": get_today}
 
 def main():
     model = big_model()
-    args = [a for a in sys.argv[1:] if a != "--without"]
+    args = [a for a in sys.argv[1:] if a not in ("--without", "--think")]
     without = "--without" in sys.argv[1:]
+    think = "--think" in sys.argv[1:]
     question = args[0] if args else "B002 の本は、あと何日で返ってきますか？"
 
     # --without のときは、自分のツールを足す前の一覧を使う
@@ -61,14 +66,17 @@ def main():
 
     print(f"モデル: {model}")
     print(f"質問: {question}")
+    print(f"思考: {'あり' if think else 'なし'}")
     print(f"使えるツール: {', '.join(functions)}\n")
 
     messages: list = [{"role": "user", "content": question}]
     for step in range(1, MAX_STEPS + 1):
         print(heading(f"{step}回目の往復"))
-        res = ollama.chat(model=model, messages=messages, tools=tools, think=False,
-                          options={"num_predict": 1024})
+        res = ollama.chat(model=model, messages=messages, tools=tools, think=think,
+                          options={"num_predict": MAX_TOKENS_THINK if think else MAX_TOKENS})
         messages.append(res.message)
+        if think and res.message.thinking:
+            print(f"（{len(res.message.thinking)}文字考えた）")
         if not res.message.tool_calls:
             print(heading("答え"))
             print((res.message.content or "").strip())
