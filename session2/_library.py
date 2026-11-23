@@ -49,11 +49,12 @@ def reset() -> None:
 def search_books(keyword: str) -> dict:
     """書名・著者名・分野に keyword を含む本を探す。
 
-    LLM は「Pythonの本」「Python 本」のような言葉で探してくることがあるので、
-    「の本」と「本」は除き、スペースで区切った言葉がすべて含まれる本を返す。
+    LLM は「Pythonの本」「Python 本」「Python本」のような言葉で探してくることがあるので、
+    「の本」と、言葉の終わりの「本」は除き、スペースで区切った言葉がすべて含まれる本を返す。
     """
     keyword = str(keyword).strip()
-    words = [w.lower() for w in keyword.replace("の本", " ").split() if w != "本"]
+    words = [w.lower().removesuffix("本") for w in keyword.replace("の本", " ").split()]
+    words = [w for w in words if w]
     hits = [b for b in BOOKS
             if words and all(any(w in b[field].lower() for field in ("title", "author", "genre"))
                              for w in words)]
