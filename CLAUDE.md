@@ -22,7 +22,7 @@
 | `internal/archive/` | 過去の下書き（Agent・MCP の図書貸出ワークブック等）。gitignore 済み。第2回・第3回の素材 | 入らない |
 
 当日の手順書・事前準備ページは Claude Artifact で公開しており、このリポジトリには無い（README からリンク）。
-第2回（Agent）はスクリプトと当日資料（Artifact）を作成済みで、Mac 16GB（4b）では実機で確認済み。8GB の PC（2b）・Windows での確認が未完了。第3回（MCP、可能であれば）は未作成。
+第2回（Agent）はスクリプトと当日資料（Artifact）を作成済みで、Mac 16GB・Windows 11 32GB（どちらも 4b）では実機で確認済み。8GB の PC（2b）での確認が未完了。第3回（MCP、可能であれば）は未作成。
 
 ## コマンド
 
