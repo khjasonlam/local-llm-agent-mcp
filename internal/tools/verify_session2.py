@@ -11,6 +11,7 @@ import json
 import re
 import sys
 import time
+import unicodedata
 from pathlib import Path
 
 import ollama
@@ -57,9 +58,25 @@ UNAVAILABLE_WORDS = ("貸出中", "貸し出し中", "貸出し中", "借りら�
                      "借りることができない", "貸し出されて", "可能ではない", "可能ではありません")
 
 
+# 「貸出中ではありません」「貸し出されていません」のような打ち消し（＝借りられる）は、先に除いてから見る
+NEGATED = re.compile(r"(貸出中|貸し出し中|貸出し中)(では|じゃ)(ない|なく|ありません)|貸し?出されて(いない|いません|おらず)")
+
+
+def plain(text: str) -> str:
+    """全角の英数字を半角にそろえ、空白を除く（「Python でつくる」と「Pythonでつくる」を同じに見る）。"""
+    return re.sub(r"\s+", "", unicodedata.normalize("NFKC", text))
+
+
 def says_unavailable(answer: str) -> bool:
-    """答えに「借りられない」という意味の言葉があるか。"""
+    """答えに「借りられない」という意味の言葉があるか（打ち消しの「貸出中ではない」は数えない）。"""
+    answer = NEGATED.sub("", plain(answer))
     return any(w in answer for w in UNAVAILABLE_WORDS)
+
+
+def mentions(answer: str, *titles: str) -> bool:
+    """答えに titles の書名がすべて書いてあるか（空白の入れ方の違いは無視する）。"""
+    answer = plain(answer)
+    return all(plain(t) in answer for t in titles)
 
 
 def used_on(calls, book_id: str, *names: str) -> bool:
@@ -67,10 +84,23 @@ def used_on(calls, book_id: str, *names: str) -> bool:
     return any(c["name"] in names and str(c["args"].get("book_id", "")).strip().upper() == book_id for c in calls)
 
 
+KANJI_DIGITS = "〇一二三四五六七八九"
+
+
+def kanji_number(text: str) -> str:
+    """漢数字（「十」「十七」「二十四」など、99まで）を算用数字にする。"""
+    tens, sep, ones = text.partition("十")
+    if not sep:
+        return str(KANJI_DIGITS.index(text))
+    return str((KANJI_DIGITS.index(tens) if tens else 1) * 10 + (KANJI_DIGITS.index(ones) if ones else 0))
+
+
 def says_days(answer: str, days: int) -> bool:
-    """答えに「○日」（日付の「12月10日」ではなく日数）として days が書いてあるか。全角数字もそろえて見る。"""
-    answer = answer.translate(str.maketrans("０１２３４５６７８９", "0123456789"))
-    return re.search(rf"(?<![0-9月]){days}\s*日", answer) is not None
+    """答えに「○日」（日付の「12月10日」ではなく日数）として days が書いてあるか。
+    全角数字・漢数字（「十日」）・空白（「10 日」）の違いはそろえて見る。"""
+    answer = re.sub(r"[一二三四五六七八九]?十[一二三四五六七八九]?|[〇一二三四五六七八九]",
+                    lambda m: kanji_number(m.group()), plain(answer))
+    return re.search(rf"(?<![0-9月]){days}日", answer) is not None
 
 
 B002_DAYS = lib.FIRST_LOANS["B002"]   # B002 が返ってくるのは、実行した日の何日後か
@@ -84,14 +114,14 @@ CANDIDATES = [
      and bool(answer) and not says_unavailable(answer), None),
     ("search", "Pythonの本を探して", "最初に search_books(Python を含む) を使い、答えに Python の本2冊の書名がある",
      lambda calls, answer: first_is("search_books", keyword="python")(calls, answer)
-     and "はじめてのPython" in answer and "Pythonでつくる業務自動化" in answer, None),
+     and mentions(answer, "はじめてのPython", "Pythonでつくる業務自動化"), None),
     ("chain", "「AIエージェント入門」を借りたいです。借りられるなら借りてください",
      "B005 が貸出され、答えで借りられないとは言っていない",
      lambda calls, answer: "B005" in lib.loans and bool(answer) and not says_unavailable(answer), None),
     ("multi", "AIの本で、いま借りられるものをすべて教えて",
      "答えに B003 と B005 の書名がある。B004（貸出中）の書名を出すなら、借りられないことも書いている",
-     lambda calls, answer: "やさしい機械学習" in answer and "AIエージェント入門" in answer
-     and ("生成AIのしくみ" not in answer or says_unavailable(answer)), None),
+     lambda calls, answer: mentions(answer, "やさしい機械学習", "AIエージェント入門")
+     and (not mentions(answer, "生成AIのしくみ") or says_unavailable(answer)), None),
     ("unavailable", "「生成AIのしくみ」を借りてください",
      "B004 をツールで確かめて（borrow_book に断られた場合も含む）、借りられないと答える",
      lambda calls, answer: used_on(calls, "B004", "check_availability", "borrow_book") and says_unavailable(answer),
@@ -130,6 +160,7 @@ def main():
         ("3.2_agent_loop", ["3.2_agent_loop.py"]),
         ("3.2_agent_loop_unavailable", ["3.2_agent_loop.py", "「生成AIのしくみ」を借りてください"]),
         ("3.3_my_tool", ["3.3_my_tool.py"]),
+        ("3.3_my_tool_think", ["3.3_my_tool.py", "--think"]),
         ("3.3_my_tool_without", ["3.3_my_tool.py", "--without"]),
         ("3.4_confirm", ["3.4_confirm.py"]),   # 入力なし → 「いいえ」として進む
         ("4.1_compare_list", ["4.1_compare.py"]),
