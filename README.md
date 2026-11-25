@@ -9,6 +9,8 @@
 | --- | --- |
 | [事前準備](https://claude.ai/artifact/FJ1vs8KyhSSfeNxXNA2idG) | Ollama・モデル・uv のインストール（勉強会の前に） |
 | [第1回 ローカルLLMを使って、AIの中をのぞく](https://claude.ai/artifact/D5nYfU1itV7aNyWARmBqam) | 当日の手順と持ち帰り課題 |
+| [第2回 事前準備](https://claude.ai/artifact/RmQ2ivGs1U18gDthNuntD9) | 新しい教材の取得と Ollama の更新（第2回の前に） |
+| [第2回 LLMに道具を持たせる、Agentの中をのぞく](https://claude.ai/artifact/AvTGaeaWv4vaq6WY13cTEb) | 当日の手順 |
 
 ## 教材の取り方
 
@@ -23,6 +25,7 @@ uv sync
 | フォルダ | 内容 |
 | --- | --- |
 | `session1/` | 第1回：ローカルLLMを使って、AIの中をのぞく（次の単語の予測・思考の比較） |
+| `session2/` | 第2回：LLMに道具を持たせる、Agentの中をのぞく（ツールの呼び出し・往復のくり返し） |
 
 スクリプトは、展開したフォルダから `uv run session1/2.1_api.py` のように実行します。
 
